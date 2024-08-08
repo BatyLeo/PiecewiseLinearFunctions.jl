@@ -1,7 +1,12 @@
 using PiecewiseLinearFunctions
 using Documenter
 
-DocMeta.setdocmeta!(PiecewiseLinearFunctions, :DocTestSetup, :(using PiecewiseLinearFunctions); recursive=true)
+DocMeta.setdocmeta!(
+    PiecewiseLinearFunctions,
+    :DocTestSetup,
+    :(using PiecewiseLinearFunctions);
+    recursive=true,
+)
 
 makedocs(;
     modules=[PiecewiseLinearFunctions],
@@ -12,12 +17,7 @@ makedocs(;
         edit_link="main",
         assets=String[],
     ),
-    pages=[
-        "Home" => "index.md",
-    ],
+    pages=["Home" => "index.md"],
 )
 
-deploydocs(;
-    repo="github.com/BatyLeo/PiecewiseLinearFunctions.jl",
-    devbranch="main",
-)
+deploydocs(; repo="github.com/BatyLeo/PiecewiseLinearFunctions.jl", devbranch="main")

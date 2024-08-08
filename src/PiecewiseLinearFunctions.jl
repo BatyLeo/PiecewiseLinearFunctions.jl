@@ -26,7 +26,7 @@ function (f::PiecewiseLinearFunction)(x::Real)
     elseif i == length(f.x)
         return f.right_slope * (x - f.x[end]) + f.y[end]
     else
-        return (f.y[i+1] - f.y[i]) / (f.x[i+1] - f.x[i]) * (x - f.x[i]) + f.y[i]
+        return (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i]) * (x - f.x[i]) + f.y[i]
     end
 end
 
@@ -36,10 +36,7 @@ function +(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
     sort!(new_x)
     new_y = [f₁(x) + f₂(x) for x in new_x]
     return PiecewiseLinearFunction(
-        new_x,
-        new_y,
-        f₁.left_slope + f₂.left_slope,
-        f₁.right_slope + f₂.right_slope,
+        new_x, new_y, f₁.left_slope + f₂.left_slope, f₁.right_slope + f₂.right_slope
     )
 end
 
