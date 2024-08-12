@@ -34,17 +34,12 @@ end
 $TYPEDSIGNATURES
 
 Outputs breakpoints (x₁, y₁), (x₂, y₂) associated with interval index `i`.
-If `i == 0` the break point is `xmin` unless it is set to `nothing`.
-If set to `nothing``, the breakpoint is the leftmost breakpoint minus 1.
-Similar thing if `i == length(f.x)`.
 """
-function get_breakpoints(f::PiecewiseLinearFunction, i::Int; xmin=nothing, xmax=nothing)
+function get_breakpoints(f::PiecewiseLinearFunction, i::Int)
     if i == 0
-        x = isnothing(xmin) ? f.x[1] - 1 : xmin
-        return x, f(x), f.x[1], f.y[1]
+        return -Inf, -sign(f.left_slope) * Inf, f.x[1], f.y[1]
     elseif i == length(f.x)
-        x = isnothing(xmax) ? f.x[end] + 1 : xmax
-        return f.x[end], f.y[end], x, f(x)
+        return f.x[end], f.y[end], Inf, sign(f.right_slope) * Inf
     end
     # else
     return f.x[i], f.y[i], f.x[i + 1], f.y[i + 1]
