@@ -30,11 +30,7 @@ function (f::PiecewiseLinearFunction)(x)
     end
 end
 
-"""
-$TYPEDSIGNATURES
-
-Outputs breakpoints (x₁, y₁), (x₂, y₂) associated with interval index `i`.
-"""
+# Outputs breakpoints (x₁, y₁), (x₂, y₂) associated with interval index `i`.
 function get_breakpoints(f::PiecewiseLinearFunction, i::Int)
     if i == 0
         return -Inf, -sign(f.left_slope) * Inf, f.x[1], f.y[1]
@@ -133,12 +129,8 @@ function search_right_intersection(f1::PiecewiseLinearFunction, f2::PiecewiseLin
     return true, (b2 - b1) / (slope1 - slope2)
 end
 
-"""
-$TYPEDSIGNATURES
-
-Search if `f1` and `f2` intersect inside the interval `]i1, i1 + 1[ ∩ ]i2, i2 + 1[`.
-Returns also the recommended increments for the breakpoints when computing min.
-"""
+# Search if `f1` and `f2` intersect inside the interval `]i1, i1 + 1[ ∩ ]i2, i2 + 1[`.
+# Returns also the recommended increments for the breakpoints when computing min.
 function search_intersection(
     f1::PiecewiseLinearFunction{T}, f2::PiecewiseLinearFunction{T}, i1::Int, i2::Int
 ) where {T}
