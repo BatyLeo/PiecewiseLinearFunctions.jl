@@ -14,18 +14,17 @@ plot!(g; label="g")
 
 # ## Basic operations
 
-# We can perform basic operations on piecewise linear functions, such as addition, subtraction, and negation.
+# We can perform basic operations on piecewise linear functions, such as addition, subtraction.
 plot(-f; label="-f")
 plot!(f + g; label="f + g")
 plot!(f - g; label="f - g")
+plot!(2f - 3; label="2f - 3")
 
 # ## Min and max
 # Minimum and maximum operations are also supported.
-plot(f; label="f")
-plot!(g; label="g")
-plot!(min(f, g); label="min(f, g)")
+plot(min(f, g); label="min(f, g)")
 plot!(max(f, g); label="max(f, g)")
 
 # ## Composition
 # Finally, we can also compose piecewise linear functions.
-plot(f ∘ g; label="h = f ∘ g")
+plot(f ∘ g; label="f ∘ g")

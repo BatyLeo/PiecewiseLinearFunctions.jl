@@ -91,6 +91,14 @@ function Base.:-(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
     return f₁ + (-f₂)
 end
 
+function Base.:*(f::PiecewiseLinearFunction, y::Real)
+    return PiecewiseLinearFunction(f.x, f.y .* y, f.left_slope * y, f.right_slope * y)
+end
+
+function Base.:*(y::Real, f::PiecewiseLinearFunction)
+    return f * y
+end
+
 function search_left_intersection(f1::PiecewiseLinearFunction, f2::PiecewiseLinearFunction)
     x = min(f1.x[1], f2.x[1])
     y1 = f1(x)
@@ -266,17 +274,6 @@ function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) w
     new_y = [f(g(x)) for x in new_x]
     new_right_slope = f(g(new_x[end] + one(T))) - new_y[end]
     new_left_slope = new_y[1] - f(g(new_x[1] - one(T)))
-
-    # new_right_slope = if g.right_slope > 0
-    #     f.right_slope * g.right_slope
-    # else
-    #     f.left_slope * g.right_slope
-    # end
-    # new_left_slope = if g.left_slope > 0
-    #     f.left_slope * g.left_slope
-    # else
-    #     f.right_slope * g.left_slope
-    # end
     return PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
 end
 

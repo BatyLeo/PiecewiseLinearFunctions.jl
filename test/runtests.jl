@@ -40,10 +40,12 @@ using StableRNGs
             f4 = f1 - f2
             f5 = f1 + f2
             f6 = -f1
+            f7 = f1 * 10
 
             @test all(f4.(X) .≈ [f1(x) - f2(x) for x in X])
             @test all(f5.(X) .≈ [f1(x) + f2(x) for x in X])
             @test all(f6.(X) .≈ [-f1(x) for x in X])
+            @test all(f7.(X) .≈ [10 * f1(x) for x in X])
         end
     end
 
@@ -59,13 +61,13 @@ using StableRNGs
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
             f3 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
 
-            f7 = min(f1, f2)
-            f7p = max(f1, f2)
-            f8 = minimum([f1, f2, f3])
+            f4 = min(f1, f2)
+            f4p = max(f1, f2)
+            f5 = minimum([f1, f2, f3])
 
-            @test all([f7(x) for x in X] .≈ [min(f1(x), f2(x)) for x in X])
-            @test all([f8(x) for x in X] .≈ [min(f1(x), f2(x), f3(x)) for x in X])
-            @test all([f7p(x) for x in X] .≈ [max(f1(x), f2(x)) for x in X])
+            @test all([f4(x) for x in X] .≈ [min(f1(x), f2(x)) for x in X])
+            @test all([f5(x) for x in X] .≈ [min(f1(x), f2(x), f3(x)) for x in X])
+            @test all([f4p(x) for x in X] .≈ [max(f1(x), f2(x)) for x in X])
         end
     end
 
