@@ -45,6 +45,27 @@ function get_breakpoints(f::PiecewiseLinearFunction, i::Int)
     return f.x[i], f.y[i], f.x[i + 1], f.y[i + 1]
 end
 
+function compute_slope_and_intercept(f::PiecewiseLinearFunction{T}, i::Int) where {T}
+    if i == 0
+        x = f.x[1]
+        y = f.y[1]
+        α = y - f(x - one(T))
+        β = y - α * x
+        return α, β
+    elseif i == length(f.x)
+        x = f.x[end]
+        y = f.y[end]
+        α = f(x + one(T)) - y
+        β = y - α * x
+        return α, β
+    end
+    # else
+    x₁, y₁, x₂, y₂ = get_breakpoints(f, i)
+    α = (y₂ - y₁) / (x₂ - x₁)
+    β = y₁ - α * x₁
+    return α, β
+end
+
 function Base.:+(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
     new_x = vcat(f₁.x, f₂.x)
     unique!(new_x)
@@ -207,6 +228,60 @@ end
 
 function Base.max(f₁::PiecewiseLinearFunction{T}, f₂::PiecewiseLinearFunction{T}) where {T}
     return -min(-f₁, -f₂)
+end
+
+function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
+    new_x = T[]
+    I = length(g.x)
+    J = length(f.x)
+    for i in 0:I
+        for j in 0:J
+            # First check if intervals intersect
+            x₁, _, x₂, _ = get_breakpoints(g, i)
+            y₁, _, y₂, _ = get_breakpoints(f, j)
+            αg, βg = compute_slope_and_intercept(g, i)
+            if αg == 0
+                x, y = 1, -1
+                if βg >= y₁ && βg <= y₂
+                    x, y = x₁, x₂
+                end
+            else
+                x, y = if αg > 0
+                    (y₁ - βg) / αg, (y₂ - βg) / αg
+                elseif αg < 0
+                    (y₂ - βg) / αg, (y₁ - βg) / αg
+                end
+                x, y = max(x₁, x), min(x₂, y)
+            end
+            # @info x
+            intersect = x <= y
+            if intersect
+                x > -Inf && push!(new_x, x)
+                y < Inf && push!(new_x, y)
+            end
+        end
+    end
+    unique!(new_x)  # remove duplicates
+    sort!(new_x)    # sort breakpoints
+    new_y = [f(g(x)) for x in new_x]
+    new_right_slope = f(g(new_x[end] + one(T))) - new_y[end]
+    new_left_slope = new_y[1] - f(g(new_x[1] - one(T)))
+
+    # new_right_slope = if g.right_slope > 0
+    #     f.right_slope * g.right_slope
+    # else
+    #     f.left_slope * g.right_slope
+    # end
+    # new_left_slope = if g.left_slope > 0
+    #     f.left_slope * g.left_slope
+    # else
+    #     f.right_slope * g.left_slope
+    # end
+    return PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+end
+
+function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
+    return compose(f, g)
 end
 
 export PiecewiseLinearFunction

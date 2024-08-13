@@ -68,4 +68,21 @@ using StableRNGs
             @test all([f7p(x) for x in X] .≈ [max(f1(x), f2(x)) for x in X])
         end
     end
+
+    @testset "Composition" begin
+        rng = StableRNG(67)
+
+        nb_tests = 100
+        for seed in 1:nb_tests
+            rng = StableRNG(seed)
+            r(n=50, m=10) = sort(rand(rng, n) .* m)
+            X = -5:2:15
+            f1 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
+            f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
+
+            f = f1 ∘ f2
+
+            @test all([f(x) for x in X] .≈ [f1(f2(x)) for x in X])
+        end
+    end
 end
