@@ -73,14 +73,14 @@ function Base.:+(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
 end
 
 function Base.:+(f::PiecewiseLinearFunction, y::Real)
-    return PiecewiseLinearFunction(f.x, f.y .+ y, f.left_slope, f.right_slope)
+    return PiecewiseLinearFunction(copy(f.x), f.y .+ y, f.left_slope, f.right_slope)
 end
 Base.:+(y::Real, f::PiecewiseLinearFunction) = f + y
 Base.:-(f::PiecewiseLinearFunction, y::Real) = f + (-y)
 Base.:-(y::Real, f::PiecewiseLinearFunction) = y + (-f)
 
 function Base.:-(f::PiecewiseLinearFunction)
-    return PiecewiseLinearFunction(f.x, -f.y, -f.left_slope, -f.right_slope)
+    return PiecewiseLinearFunction(copy(f.x), -f.y, -f.left_slope, -f.right_slope)
 end
 
 function Base.:-(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
@@ -88,7 +88,7 @@ function Base.:-(f₁::PiecewiseLinearFunction, f₂::PiecewiseLinearFunction)
 end
 
 function Base.:*(f::PiecewiseLinearFunction, y::Real)
-    return PiecewiseLinearFunction(f.x, f.y .* y, f.left_slope * y, f.right_slope * y)
+    return PiecewiseLinearFunction(copy(f.x), f.y .* y, f.left_slope * y, f.right_slope * y)
 end
 
 function Base.:*(y::Real, f::PiecewiseLinearFunction)
