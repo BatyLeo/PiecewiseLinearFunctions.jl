@@ -87,4 +87,18 @@ using StableRNGs
             @test all([f(x) for x in X] .≈ [f1(f2(x)) for x in X])
         end
     end
+
+    @testset "Edge cases" begin
+        f1 = PiecewiseLinearFunction([5.0, 9.0, 14.0], [1.0, 5.0, 20.0], 0.0, 2.0)
+        f2 = PiecewiseLinearFunction([0.0], [0.0], 0.0, 2.0)
+
+        computed_min = min(f1, f2)
+        true_min = PiecewiseLinearFunction(
+            [0.0, 0.5, 5.0, 9.0, 14.0], [0.0, 1.0, 1.0, 5.0, 20.0], 0.0, 2.0
+        )
+        @test all(computed_min.x .== true_min.x)
+        @test all(computed_min.y .== true_min.y)
+        @test all(computed_min.left_slope .== true_min.left_slope)
+        @test all(computed_min.right_slope .== true_min.right_slope)
+    end
 end
