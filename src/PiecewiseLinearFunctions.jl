@@ -161,7 +161,8 @@ function search_intersection(
     elseif i1 == length(f1.x)
         x12 = x22
         y12 = f1(x12)
-    elseif i2 == 0
+    end
+    if i2 == 0
         x21 = x11
         y21 = f2(x21)
     elseif i2 == length(f2.x)
@@ -250,6 +251,8 @@ function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) w
                     (y₁ - βg) / αg, (y₂ - βg) / αg
                 elseif αg < 0
                     (y₂ - βg) / αg, (y₁ - βg) / αg
+                else
+                    @error "Unexpected slope" αg f g
                 end
                 x, y = max(x₁, x), min(x₂, y)
             end
