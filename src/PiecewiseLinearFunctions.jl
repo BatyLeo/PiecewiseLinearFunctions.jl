@@ -19,6 +19,11 @@ struct PiecewiseLinearFunction{T<:AbstractFloat}
     right_slope::T
 end
 
+"""
+$TYPEDSIGNATURES
+
+Evaluate the piecewise linear function `f` at `x`.
+"""
 function (f::PiecewiseLinearFunction)(x)
     i = searchsortedlast(f.x, x)
     if i == 0
@@ -28,6 +33,23 @@ function (f::PiecewiseLinearFunction)(x)
     else
         return (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i]) * (x - f.x[i]) + f.y[i]
     end
+end
+
+"""
+$TYPEDSIGNATURES
+
+Compute all the slopes of the piecewise linear function, from left to right.
+"""
+function compute_slopes(f::PiecewiseLinearFunction)
+    slopes = fill(f.left_slope, length(f.x) + 1)
+    for i in eachindex(f.x)
+        if i == length(f.x)
+            slopes[i + 1] = f.right_slope
+        else
+            slopes[i + 1] = (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i])
+        end
+    end
+    return slopes
 end
 
 # Outputs breakpoints (x₁, y₁), (x₂, y₂) associated with interval index `i`.
@@ -276,6 +298,6 @@ function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     return compose(f, g)
 end
 
-export PiecewiseLinearFunction
+export PiecewiseLinearFunction, compute_slopes
 
 end
