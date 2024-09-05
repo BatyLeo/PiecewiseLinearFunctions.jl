@@ -33,7 +33,7 @@ using StableRNGs
         for seed in 1:nb_tests
             rng = StableRNG(seed)
             r(n=50, m=10) = sort(rand(rng, n) .* m)
-            X = -5:0.01:15
+            X = -15:0.01:15
             f1 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
 
@@ -56,7 +56,7 @@ using StableRNGs
         for seed in 1:nb_tests
             rng = StableRNG(seed)
             r(n=50, m=10) = sort(rand(rng, n) .* m)
-            X = -5:2:15
+            X = -15:2:15
             f1 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
             f3 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
@@ -78,7 +78,7 @@ using StableRNGs
         for seed in 1:nb_tests
             rng = StableRNG(seed)
             r(n=50, m=10) = sort(rand(rng, n) .* m)
-            X = -5:2:15
+            X = -15:2:15
             f1 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
 
