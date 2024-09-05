@@ -278,7 +278,6 @@ function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) w
                 end
                 x, y = max(x₁, x), min(x₂, y)
             end
-            # @info x
             intersect = x <= y
             if intersect
                 x > -Inf && push!(new_x, x)
@@ -289,8 +288,16 @@ function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) w
     unique!(new_x)  # remove duplicates
     sort!(new_x)    # sort breakpoints
     new_y = [f(g(x)) for x in new_x]
-    new_right_slope = f(g(new_x[end] + one(T))) - new_y[end]
-    new_left_slope = new_y[1] - f(g(new_x[1] - one(T)))
+    new_right_slope = if g.right_slope >= 0
+        g.right_slope * f.right_slope
+    else # g.right_slope < 0
+        g.right_slope * f.left_slope
+    end
+    new_left_slope = if g.left_slope >= 0
+        g.left_slope * f.left_slope
+    else # g.left_slope < 0
+        g.left_slope * f.right_slope
+    end
     return PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
 end
 
