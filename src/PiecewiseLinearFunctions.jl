@@ -35,6 +35,15 @@ function (f::PiecewiseLinearFunction)(x)
     end
 end
 
+function Base.:(==)(
+    f1::PiecewiseLinearFunction{T}, f2::PiecewiseLinearFunction{T}
+) where {T}
+    return f1.x == f2.x &&
+           f1.y == f2.y &&
+           f1.left_slope == f2.left_slope &&
+           f1.right_slope == f2.right_slope
+end
+
 """
 $TYPEDSIGNATURES
 
@@ -50,6 +59,31 @@ function compute_slopes(f::PiecewiseLinearFunction)
         end
     end
     return slopes
+end
+
+"""
+$TYPEDSIGNATURES
+
+Return a new piecewise linear function with redundant breakpoints removed.
+"""
+function remove_redundant_breakpoints(f::PiecewiseLinearFunction; atol=1e-12)
+    slopes = compute_slopes(f)
+    N = length(f.x)
+    to_remove = falses(N)
+    for i in 1:N
+        if isapprox(slopes[i], slopes[i + 1]; atol)
+            to_remove[i] = true
+        end
+    end
+    if isapprox(slopes[end - 1], slopes[end]; atol)
+        to_remove[end] = true
+    end
+    if all(to_remove) # case where all breakpoints are redundant, keep only the first one
+        return PiecewiseLinearFunction([f.x[1]], [f.y[1]], f.left_slope, f.right_slope)
+    end
+    return PiecewiseLinearFunction(
+        f.x[.!to_remove], f.y[.!to_remove], f.left_slope, f.right_slope
+    )
 end
 
 # Outputs breakpoints (x₁, y₁), (x₂, y₂) associated with interval index `i`.
@@ -253,7 +287,19 @@ function Base.max(f₁::PiecewiseLinearFunction{T}, f₂::PiecewiseLinearFunctio
     return -min(-f₁, -f₂)
 end
 
-function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
+"""
+$TYPEDSIGNATURES
+
+Compute the composition f ∘ g of two piecewise linear functions.
+By default, the function removes redundant breakpoints in the output as a post processing step.
+
+This method can also be called using Base.∘
+"""
+function compose(
+    f::PiecewiseLinearFunction{T},
+    g::PiecewiseLinearFunction{T};
+    postprocess_breakpoints=true,
+) where {T}
     new_x = T[]
     I = length(g.x)
     J = length(f.x)
@@ -298,13 +344,17 @@ function compose(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) w
     else # g.left_slope < 0
         g.left_slope * f.right_slope
     end
-    return PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+    fcircg = PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+    if postprocess_breakpoints
+        return remove_redundant_breakpoints(fcircg)
+    end
+    return fcircg
 end
 
 function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     return compose(f, g)
 end
 
-export PiecewiseLinearFunction, compute_slopes
+export PiecewiseLinearFunction, compute_slopes, compose, remove_redundant_breakpoints
 
 end

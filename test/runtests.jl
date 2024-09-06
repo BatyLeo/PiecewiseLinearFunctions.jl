@@ -100,5 +100,13 @@ using StableRNGs
         @test all(computed_min.y .== true_min.y)
         @test all(computed_min.left_slope .== true_min.left_slope)
         @test all(computed_min.right_slope .== true_min.right_slope)
+
+        f = PiecewiseLinearFunction([0.0, 1.0, 2.0], [1.0, 1.0, 1.0], 0.0, 1.0)
+        @test remove_redundant_breakpoints(f) ==
+            PiecewiseLinearFunction{Float64}([2.0], [1.0], 0.0, 1.0)
+        @test compose(f, f; postprocess_breakpoints=false) ==
+            PiecewiseLinearFunction([0.0, 1.0, 2.0, 3.0], [1.0, 1.0, 1.0, 1.0], 0.0, 1.0)
+        f = PiecewiseLinearFunction([0.0], [0.0], 0.0, 0.0)
+        @test remove_redundant_breakpoints(f) == f
     end
 end
