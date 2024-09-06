@@ -35,6 +35,15 @@ function (f::PiecewiseLinearFunction)(x)
     end
 end
 
+function Base.:(==)(
+    f1::PiecewiseLinearFunction{T}, f2::PiecewiseLinearFunction{T}
+) where {T}
+    return f1.x == f2.x &&
+           f1.y == f2.y &&
+           f1.left_slope == f2.left_slope &&
+           f1.right_slope == f2.right_slope
+end
+
 """
 $TYPEDSIGNATURES
 
