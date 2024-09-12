@@ -252,9 +252,14 @@ function search_intersection(
         return false, zero(T), new_i1, new_i2
     end
 
-    # Intersection at the leftmost point, therefore not inside the interval
+    # Intersection at the leftmost point, therefore not inside the intervals
     if sign1 == 0
         return false, x1, new_i1, new_i2
+    end
+
+    # Intersection at the rightmost point, therefore not inside the intervals
+    if sign2 == 0
+        return false, x2, new_i1, new_i2
     end
 
     # else, there is an intersection inside the interval
@@ -280,7 +285,9 @@ function Base.min(f₁::PiecewiseLinearFunction{T}, f₂::PiecewiseLinearFunctio
     unique!(new_x)
     sort!(new_x)
     new_y = T[min(f₁(x), f₂(x)) for x in new_x]
-    return PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+    return remove_redundant_breakpoints(
+        PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+    )
 end
 
 function Base.max(f₁::PiecewiseLinearFunction{T}, f₂::PiecewiseLinearFunction{T}) where {T}
