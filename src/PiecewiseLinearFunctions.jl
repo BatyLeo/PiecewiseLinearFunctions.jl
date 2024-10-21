@@ -362,6 +362,17 @@ function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     return compose(f, g)
 end
 
-export PiecewiseLinearFunction, compute_slopes, compose, remove_redundant_breakpoints
+"""
+$TYPEDSIGNATURES
+
+Check if a piecewise linear function is convex.
+"""
+function is_convex(f::PiecewiseLinearFunction)
+    slopes = compute_slopes(f)
+    return all(diff(slopes) .>= 0)
+end
+
+export PiecewiseLinearFunction
+export compute_slopes, compose, remove_redundant_breakpoints, is_convex
 
 end

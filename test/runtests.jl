@@ -161,4 +161,12 @@ using StableRNGs
         )
         @test PiecewiseLinearFunctions.search_intersection(f, g, 3, 1)[1] == false
     end
+
+    @testset "Convexity" begin
+        f = PiecewiseLinearFunction([0.0, 1.0, 2.0, 3.0], [0.0, 0.0, 0.5, 1.5], 0.0, 1.0)
+        @test is_convex(f) == true
+
+        f = PiecewiseLinearFunction([0.0, 1.0, 2.0], [0.0, 1.0, 0.0], 0.0, -1.0)
+        @test is_convex(f) == false
+    end
 end
