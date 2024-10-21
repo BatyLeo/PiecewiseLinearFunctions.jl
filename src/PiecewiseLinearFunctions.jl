@@ -362,6 +362,70 @@ function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     return compose(f, g)
 end
 
-export PiecewiseLinearFunction, compute_slopes, compose, remove_redundant_breakpoints
+"""
+$TYPEDSIGNATURES
+
+Check if a piecewise linear function is convex.
+"""
+function is_convex(f::PiecewiseLinearFunction)
+    slopes = compute_slopes(f)
+    return all(diff(slopes) .>= 0)
+end
+
+function compute_slope(x₁, y₁, x₂, y₂)
+    return (y₂ - y₁) / (x₂ - x₁)
+end
+
+"""
+$TYPEDSIGNATURES
+
+Compute the convex meet of two piecewise linear functions, i.e. the tightest convex lower bound.
+Both functions need to be convex.
+"""
+function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
+    @assert is_convex(f) && is_convex(g) "Both functions need to be convex"
+    h = min(f, g)
+    while !is_convex(h)
+        h = convexify(h)
+    end
+    return h
+end
+
+function convexify(f::PiecewiseLinearFunction{T}) where {T}
+    new_right_slope = f.right_slope
+    new_left_slope = f.left_slope
+    new_x = T[]
+    new_y = T[]
+    slopes = compute_slopes(f)
+
+    i = findfirst(x -> x >= new_left_slope, slopes[2:end])
+    push!(new_x, f.x[i])
+    push!(new_y, f.y[i])
+
+    j = findlast(x -> x <= new_right_slope, slopes[1:(end - 1)])
+
+    last_i = i
+    i += 1
+    while i < j
+        considered_slope = compute_slope(f.x[last_i], f.y[last_i], f.x[i], f.y[i])
+        if considered_slope <= slopes[i + 1] && considered_slope <= new_right_slope
+            push!(new_x, f.x[i])
+            push!(new_y, f.y[i])
+            last_i = i
+        end
+        i += 1
+    end
+
+    push!(new_x, f.x[j])
+    push!(new_y, f.y[j])
+
+    return remove_redundant_breakpoints(
+        PiecewiseLinearFunction(new_x, new_y, f.left_slope, f.right_slope)
+    )
+end
+
+export PiecewiseLinearFunction
+export compute_slopes, compose, remove_redundant_breakpoints
+export is_convex, convex_meet, convexify
 
 end
