@@ -389,64 +389,6 @@ function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T
         h = convexify(h)
     end
     return h
-    # new_left_slope = max(f.left_slope, g.left_slope)
-    # new_right_slope = min(f.right_slope, g.right_slope)
-    # new_x = T[]
-    # new_y = T[]
-    # f_slopes = compute_slopes(f)
-    # g_slopes = compute_slopes(g)
-
-    # x_left, y_left = if f.left_slope < g.left_slope
-    #     i = findfirst(x -> x >= g.left_slope, f_slopes) - 1
-    #     f.x[i], f.y[i]
-    # elseif f.left_slope > g.left_slope
-    #     i = findfirst(x -> x >= f.left_slope, g_slopes) - 1
-    #     g.x[i], g.y[i]
-    # else
-    #     @assert false "Unexpected case"
-    # end
-
-    # x_right, y_right = if f.right_slope < g.right_slope
-    #     i = findlast(x -> x <= f.right_slope, g_slopes)
-    #     g.x[i], g.y[i]
-    # elseif f.right_slope > g.right_slope
-    #     i = findlast(x -> x <= g.right_slope, f_slopes)
-    #     f.x[i], f.y[i]
-    # else
-    #     @assert false "Unexpected case"
-    # end
-
-    # push!(new_x, x_left)
-    # push!(new_y, y_left)
-
-    # current_slope = new_left_slope
-
-    # while true
-    #     f_index = findfirst(x -> new_x[end] < x && x < x_right, f.x)
-    #     g_index = findfirst(x -> new_x[end] < x && x < x_right, g.x)
-    #     # Check if we reached the rightmost point
-    #     if isnothing(f_index) && isnothing(g_index)
-    #         break
-    #     end
-    #     @info "" f_index g_index new_x[end] new_y[end] x_right
-    #     x₁, y₁ = x_left, y_left
-    #     slope_f = compute_slope(x₁, y₁, f.x[f_index], f.y[f_index])
-    #     slope_g = compute_slope(x₁, y₁, g.x[g_index], g.y[g_index])
-    #     @info "" slope_f slope_g
-    #     if abs(slope_f - current_slope) > abs(slope_g - current_slope)
-    #         push!(new_x, g.x[g_index])
-    #         push!(new_y, g.y[g_index])
-    #     else
-    #         push!(new_x, f.x[f_index])
-    #         push!(new_y, f.y[f_index])
-    #     end
-    # end
-
-    # push!(new_x, x_right)
-    # push!(new_y, y_right)
-
-    # meet = PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
-    # return meet
 end
 
 function convexify(f::PiecewiseLinearFunction{T}) where {T}
@@ -466,7 +408,6 @@ function convexify(f::PiecewiseLinearFunction{T}) where {T}
     i += 1
     while i < j
         considered_slope = compute_slope(f.x[last_i], f.y[last_i], f.x[i], f.y[i])
-        # @info "" i j considered_slope slopes[i + 1]
         if considered_slope <= slopes[i + 1] && considered_slope <= new_right_slope
             push!(new_x, f.x[i])
             push!(new_y, f.y[i])
