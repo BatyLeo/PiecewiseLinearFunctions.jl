@@ -168,5 +168,37 @@ using StableRNGs
 
         f = PiecewiseLinearFunction([0.0, 1.0, 2.0], [0.0, 1.0, 0.0], 0.0, -1.0)
         @test is_convex(f) == false
+
+        f = PiecewiseLinearFunction([-0.5, 0.0, 0.5], [0.5, 0.25, 0.5], -1.0, 1.0)
+        g = PiecewiseLinearFunction([0.0, 0.5, 1.0], [0.5, 0.4, 0.5], -0.5, 2.0)
+        h = convex_meet(f, g)
+        @test is_convex(f) && is_convex(g) && is_convex(h)
+
+        h_min = min(f, g)
+        X = -15:0.1:15
+        @test all([h(x) <= h_min(x) for x in X])
+
+        function random_convex_function(rng)
+            random_slopes = sort(rand(rng, 10) * 10 .- 5)
+            x = [0.0]
+            y = [0.0]
+            for slope in random_slopes[2:(end - 1)]
+                push!(x, x[end] + 1.0)
+                push!(y, y[end] + slope)
+            end
+            return PiecewiseLinearFunction(x, y, random_slopes[1], random_slopes[end])
+        end
+
+        nb_tests = 100
+        for seed in 1:nb_tests
+            rng = StableRNG(seed)
+            f = random_convex_function(rng)
+            g = random_convex_function(rng)
+            @test is_convex(f) && is_convex(g)
+            h = convex_meet(f, g)
+            @test is_convex(h)
+            fming = min(f, g)
+            @test all([h(x) <= fming(x) for x in X])
+        end
     end
 end
