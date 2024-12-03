@@ -160,6 +160,10 @@ using StableRNGs
             727.1143310992231,
         )
         @test PiecewiseLinearFunctions.search_intersection(f, g, 3, 1)[1] == false
+
+        f = PiecewiseLinearFunction([1.0, 1.0], [1.0, 1.0], 0.0, 0.0)
+        @test remove_redundant_breakpoints(f) ==
+            PiecewiseLinearFunction([1.0], [1.0], 0.0, 0.0)
     end
 
     @testset "Convexity" begin

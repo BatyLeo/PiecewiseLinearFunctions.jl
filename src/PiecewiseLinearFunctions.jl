@@ -74,6 +74,9 @@ function remove_redundant_breakpoints(f::PiecewiseLinearFunction; atol=1e-12)
         if isapprox(slopes[i], slopes[i + 1]; atol)
             to_remove[i] = true
         end
+        if isnan(slopes[i + 1])  # slope is NaN when x[i] == x[i + 1], duplicate break point
+            to_remove[i] = true
+        end
     end
     if isapprox(slopes[end - 1], slopes[end]; atol)
         to_remove[end] = true
