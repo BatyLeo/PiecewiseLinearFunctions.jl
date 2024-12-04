@@ -370,9 +370,9 @@ $TYPEDSIGNATURES
 
 Check if a piecewise linear function is convex.
 """
-function is_convex(f::PiecewiseLinearFunction)
+function is_convex(f::PiecewiseLinearFunction; eps=1e-12)
     slopes = compute_slopes(f)
-    return all(diff(slopes) .>= 0)
+    return all(diff(slopes) .>= -eps)
 end
 
 function compute_slope(x₁, y₁, x₂, y₂)
@@ -386,7 +386,7 @@ Compute the convex meet of two piecewise linear functions, i.e. the tightest con
 Both functions need to be convex.
 """
 function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
-    @assert is_convex(f) && is_convex(g) "Both functions need to be convex"
+    @assert is_convex(f) && is_convex(g) "Both functions need to be convex: f=$f, g=$g"
     h = min(f, g)
     while !is_convex(h)
         h = convexify(h)
