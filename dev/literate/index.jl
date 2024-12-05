@@ -32,6 +32,9 @@ plot(f ∘ g; label="f ∘ g")
 # ## Convexity
 # We can check if a piecewise linear function is convex.
 is_convex(f)
+# We can also ompute the convex lower bound of a piecewise linear function.
+plot(f; label="f")
+plot!(convex_lower_bound(f); label="convex_lower_bound(f)")
 # And compute the convex meet between two convex functions, i.e. the tightest convex lower bound.
 f = PiecewiseLinearFunction([-0.5, 0.0, 0.5], [0.5, 0.25, 0.5], -1.0, 1.0)
 g = PiecewiseLinearFunction([0.0, 0.5, 1.0], [0.5, 0.4, 0.5], -0.5, 2.0)
