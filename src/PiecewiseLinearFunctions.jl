@@ -388,26 +388,15 @@ function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T
     return convex_lower_bound(min(f, g))
 end
 
-function get_point(f::PiecewiseLinearFunction{T}, index::Int) where {T}
-    if index == 0
-        x₀ = f.x[1] - one(T)
-        return x₀, f(x₀)
-    elseif index == length(f.x) + 1
-        x_inf = f.x[end] + one(T)
-        return x_inf, f(x_inf)
-    end
-    return f.x[index], f.y[index]
-end
-
 """
 $TYPEDSIGNATURES
 
 Check if the sequence of points (p1, p2, p3) forms a convex sequence.
 """
 function is_convex_sequence(f, i1, i2, i3)
-    x₁, y₁ = get_point(f, i1)
-    x₂, y₂ = get_point(f, i2)
-    x₃, y₃ = get_point(f, i3)
+    x₁, y₁ = f.x[i1], f.y[i1]
+    x₂, y₂ = f.x[i2], f.y[i2]
+    x₃, y₃ = f.x[i3], f.y[i3]
 
     cross = (x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁)
     return cross > 0
