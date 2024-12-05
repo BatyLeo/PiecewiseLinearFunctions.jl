@@ -210,9 +210,11 @@ using StableRNGs
             g = random_convex_function(rng)
             @test is_convex(f) && is_convex(g)
             h = convex_meet(f, g)
+            h2 = fast_convex_meet(f, g)
             @test is_convex(h)
             fming = min(f, g)
             @test all([h(x) <= fming(x) for x in X])
+            @test all([h(x) == h2(x) for x in X])
         end
     end
 end
