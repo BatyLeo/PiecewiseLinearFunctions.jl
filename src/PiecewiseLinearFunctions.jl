@@ -383,52 +383,67 @@ end
 $TYPEDSIGNATURES
 
 Compute the convex meet of two piecewise linear functions, i.e. the tightest convex lower bound.
-Both functions need to be convex.
 """
 function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
-    @assert is_convex(f) && is_convex(g) "Both functions need to be convex: f=$f, g=$g"
-    h = min(f, g)
-    while !is_convex(h)
-        h = convexify(h)
-    end
-    return h
+    return convex_lower_bound(min(f, g))
 end
 
-function convexify(f::PiecewiseLinearFunction{T}) where {T}
-    new_right_slope = f.right_slope
-    new_left_slope = f.left_slope
-    new_x = T[]
-    new_y = T[]
-    slopes = compute_slopes(f)
-
-    i = findfirst(x -> x >= new_left_slope, slopes[2:end])
-    push!(new_x, f.x[i])
-    push!(new_y, f.y[i])
-
-    j = findlast(x -> x <= new_right_slope, slopes[1:(end - 1)])
-
-    last_i = i
-    i += 1
-    while i < j
-        considered_slope = compute_slope(f.x[last_i], f.y[last_i], f.x[i], f.y[i])
-        if considered_slope <= slopes[i + 1] && considered_slope <= new_right_slope
-            push!(new_x, f.x[i])
-            push!(new_y, f.y[i])
-            last_i = i
-        end
-        i += 1
+function get_point(f::PiecewiseLinearFunction{T}, index::Int) where {T}
+    if index == 0
+        x₀ = f.x[1] - one(T)
+        return x₀, f(x₀)
+    elseif index == length(f.x) + 1
+        x_inf = f.x[end] + one(T)
+        return x_inf, f(x_inf)
     end
+    return f.x[index], f.y[index]
+end
 
-    push!(new_x, f.x[j])
-    push!(new_y, f.y[j])
+"""
+$TYPEDSIGNATURES
 
-    return remove_redundant_breakpoints(
-        PiecewiseLinearFunction(new_x, new_y, f.left_slope, f.right_slope)
+Check if the sequence of points (p1, p2, p3) forms a convex sequence.
+"""
+function is_convex_sequence(f, i1, i2, i3)
+    x₁, y₁ = get_point(f, i1)
+    x₂, y₂ = get_point(f, i2)
+    x₃, y₃ = get_point(f, i3)
+
+    cross = (x₂ - x₁) * (y₃ - y₁) - (y₂ - y₁) * (x₃ - x₁)
+    return cross > 0
+end
+
+"""
+$TYPEDSIGNATURES
+
+Compute the tightest convex lower bound of a piecewise linear function, using a convex hull algorithm.
+"""
+function convex_lower_bound(f::PiecewiseLinearFunction{T}) where {T}
+    n = length(f.x) # number of breakpoints
+    hull = Int[]
+    for i in 1:n
+        while length(hull) >= 2 && !is_convex_sequence(f, hull[end - 1], hull[end], i)
+            pop!(hull)
+        end
+        push!(hull, i)
+    end
+    # Second pass to remove points not compatible with left and right slopes
+    h = PiecewiseLinearFunction(f.x[hull], f.y[hull], f.left_slope, f.right_slope)
+    slopes = compute_slopes(h)
+    imin = findfirst(x -> x > slopes[1], slopes)
+    imax = findlast(x -> x < slopes[end], slopes)
+    if isnothing(imin) || isnothing(imax)
+        i = argmin(h.y)
+        return PiecewiseLinearFunction([h.x[i]], [h.y[i]], h.left_slope, h.right_slope)
+    end
+    imin -= 1
+    return PiecewiseLinearFunction(
+        h.x[imin:imax], h.y[imin:imax], h.left_slope, h.right_slope
     )
 end
 
 export PiecewiseLinearFunction
 export compute_slopes, compose, remove_redundant_breakpoints
-export is_convex, convex_meet, convexify
+export is_convex, convex_meet, convex_lower_bound
 
 end

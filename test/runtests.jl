@@ -164,6 +164,16 @@ using StableRNGs
         f = PiecewiseLinearFunction([1.0, 1.0], [1.0, 1.0], 0.0, 0.0)
         @test remove_redundant_breakpoints(f) ==
             PiecewiseLinearFunction([1.0], [1.0], 0.0, 0.0)
+
+        h = PiecewiseLinearFunctions.PiecewiseLinearFunction{Float64}(
+            [41.00004303958917, 80.9711826496009, 581.7160030371398],
+            [-503.8664721869741, -500.7448203875389, 0.0],
+            0.0,
+            0.0,
+        )
+        @test convex_lower_bound(h) == PiecewiseLinearFunction{Float64}(
+            [41.00004303958917], [-503.8664721869741], 0.0, 0.0
+        )
     end
 
     @testset "Convexity" begin
