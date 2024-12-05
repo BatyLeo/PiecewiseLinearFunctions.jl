@@ -31,7 +31,7 @@ function (f::PiecewiseLinearFunction)(x)
     elseif i == length(f.x)
         return f.right_slope * (x - f.x[end]) + f.y[end]
     else
-        return (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i]) * (x - f.x[i]) + f.y[i]
+        return (f.y[i+1] - f.y[i]) / (f.x[i+1] - f.x[i]) * (x - f.x[i]) + f.y[i]
     end
 end
 
@@ -53,9 +53,9 @@ function compute_slopes(f::PiecewiseLinearFunction)
     slopes = fill(f.left_slope, length(f.x) + 1)
     for i in eachindex(f.x)
         if i == length(f.x)
-            slopes[i + 1] = f.right_slope
+            slopes[i+1] = f.right_slope
         else
-            slopes[i + 1] = (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i])
+            slopes[i+1] = (f.y[i+1] - f.y[i]) / (f.x[i+1] - f.x[i])
         end
     end
     return slopes
@@ -71,14 +71,14 @@ function remove_redundant_breakpoints(f::PiecewiseLinearFunction; atol=1e-12)
     N = length(f.x)
     to_remove = falses(N)
     for i in 1:N
-        if isapprox(slopes[i], slopes[i + 1]; atol)
+        if isapprox(slopes[i], slopes[i+1]; atol)
             to_remove[i] = true
         end
-        if isnan(slopes[i + 1])  # slope is NaN when x[i] == x[i + 1], duplicate break point
+        if isnan(slopes[i+1])  # slope is NaN when x[i] == x[i + 1], duplicate break point
             to_remove[i] = true
         end
     end
-    if isapprox(slopes[end - 1], slopes[end]; atol)
+    if isapprox(slopes[end-1], slopes[end]; atol)
         to_remove[end] = true
     end
     if all(to_remove) # case where all breakpoints are redundant, keep only the first one
@@ -97,7 +97,7 @@ function get_breakpoints(f::PiecewiseLinearFunction, i::Int)
         return f.x[end], f.y[end], Inf, sign(f.right_slope) * Inf
     end
     # else
-    return f.x[i], f.y[i], f.x[i + 1], f.y[i + 1]
+    return f.x[i], f.y[i], f.x[i+1], f.y[i+1]
 end
 
 function compute_slope_and_intercept(f::PiecewiseLinearFunction{T}, i::Int) where {T}
@@ -411,7 +411,7 @@ function convex_lower_bound(f::PiecewiseLinearFunction{T}) where {T}
     n = length(f.x) # number of breakpoints
     hull = Int[]
     for i in 1:n
-        while length(hull) >= 2 && !is_convex_sequence(f, hull[end - 1], hull[end], i)
+        while length(hull) >= 2 && !is_convex_sequence(f, hull[end-1], hull[end], i)
             pop!(hull)
         end
         push!(hull, i)
@@ -442,10 +442,31 @@ function fast_convex_meet(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction
     x = vcat(f.x, g.x)
     y = vcat(f.y, g.y)
     perm = sortperm(x)
+    x = x[perm]
+    y = y[perm]
+
+    n = length(x)
+    indices = trues(n)
+    for i in 2:n
+        if x[i] == x[i-1]
+            indices[i] = false
+        end
+    end
+    for i in 2:n
+        if !indices[i]
+            value = min(y[i], y[i-1])
+            y[i] = value
+            y[i-1] = value
+        end
+    end
+    x = x[indices]
+    y = y[indices]
+
     h = PiecewiseLinearFunction(
-        x[perm], y[perm], max(f.left_slope, g.left_slope), min(f.right_slope, g.right_slope)
+        x, y, max(f.left_slope, g.left_slope), min(f.right_slope, g.right_slope)
     )
-    return convex_lower_bound(h)
+    res = convex_lower_bound(h)
+    return res
 end
 
 export PiecewiseLinearFunction
