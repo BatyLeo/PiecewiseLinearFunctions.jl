@@ -431,8 +431,46 @@ function convex_lower_bound(f::PiecewiseLinearFunction{T}) where {T}
     )
 end
 
+"""
+$TYPEDSIGNATURES
+
+A faster version of `convex_meet` that only works on convex functions.
+!!! warning
+    This function does not check if the input functions are convex.
+"""
+function fast_convex_meet(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
+    x = vcat(f.x, g.x)
+    y = vcat(f.y, g.y)
+    perm = sortperm(x)
+    x = x[perm]
+    y = y[perm]
+
+    n = length(x)
+    indices = trues(n)
+    for i in 2:n
+        if x[i] == x[i - 1]
+            indices[i] = false
+        end
+    end
+    for i in 2:n
+        if !indices[i]
+            value = min(y[i], y[i - 1])
+            y[i] = value
+            y[i - 1] = value
+        end
+    end
+    x = x[indices]
+    y = y[indices]
+
+    h = PiecewiseLinearFunction(
+        x, y, max(f.left_slope, g.left_slope), min(f.right_slope, g.right_slope)
+    )
+    res = convex_lower_bound(h)
+    return res
+end
+
 export PiecewiseLinearFunction
 export compute_slopes, compose, remove_redundant_breakpoints
-export is_convex, convex_meet, convex_lower_bound
+export is_convex, convex_meet, fast_convex_meet, convex_lower_bound
 
 end

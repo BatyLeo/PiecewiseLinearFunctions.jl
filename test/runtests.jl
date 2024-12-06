@@ -174,6 +174,17 @@ using StableRNGs
         @test convex_lower_bound(h) == PiecewiseLinearFunction{Float64}(
             [41.00004303958917], [-503.8664721869741], 0.0, 0.0
         )
+
+        f = PiecewiseLinearFunctions.PiecewiseLinearFunction{Float64}(
+            [0.0], [0.0], 0.0, 2.0
+        )
+        g = PiecewiseLinearFunctions.PiecewiseLinearFunction{Float64}(
+            [0.0], [0.0], 0.0, 1.0
+        )
+
+        @test convex_meet(f, g) == PiecewiseLinearFunction{Float64}([0.0], [0.0], 0.0, 1.0)
+        @test fast_convex_meet(f, g) ==
+            PiecewiseLinearFunction{Float64}([0.0], [0.0], 0.0, 1.0)
     end
 
     @testset "Convexity" begin
@@ -210,9 +221,11 @@ using StableRNGs
             g = random_convex_function(rng)
             @test is_convex(f) && is_convex(g)
             h = convex_meet(f, g)
+            h2 = fast_convex_meet(f, g)
             @test is_convex(h)
             fming = min(f, g)
             @test all([h(x) <= fming(x) for x in X])
+            @test all([h(x) == h2(x) for x in X])
         end
     end
 end
