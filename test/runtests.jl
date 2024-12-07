@@ -83,8 +83,10 @@ using StableRNGs
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
 
             f = f1 ∘ f2
+            fp = PiecewiseLinearFunctions.old_compose(f1, f2)
 
             @test all([f(x) for x in X] .≈ [f1(f2(x)) for x in X])
+            @test all([f(x) for x in X] .≈ [fp(x) for x in X])
         end
     end
 
