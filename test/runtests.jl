@@ -83,8 +83,10 @@ using StableRNGs
             f2 = PiecewiseLinearFunction(r(), r(), rand(rng) * 10 - 5, rand(rng) * 10 - 5)
 
             f = f1 ∘ f2
+            fp = PiecewiseLinearFunctions.old_compose(f1, f2)
 
             @test all([f(x) for x in X] .≈ [f1(f2(x)) for x in X])
+            @test all([f(x) for x in X] .≈ [fp(x) for x in X])
         end
     end
 
@@ -183,7 +185,7 @@ using StableRNGs
         )
 
         @test convex_meet(f, g) == PiecewiseLinearFunction{Float64}([0.0], [0.0], 0.0, 1.0)
-        @test fast_convex_meet(f, g) ==
+        @test PiecewiseLinearFunctions.old_convex_meet(f, g) ==
             PiecewiseLinearFunction{Float64}([0.0], [0.0], 0.0, 1.0)
     end
 
@@ -221,7 +223,7 @@ using StableRNGs
             g = random_convex_function(rng)
             @test is_convex(f) && is_convex(g)
             h = convex_meet(f, g)
-            h2 = fast_convex_meet(f, g)
+            h2 = PiecewiseLinearFunctions.old_convex_meet(f, g)
             @test is_convex(h)
             fming = min(f, g)
             @test all([h(x) <= fming(x) for x in X])

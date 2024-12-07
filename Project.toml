@@ -1,7 +1,7 @@
 name = "PiecewiseLinearFunctions"
 uuid = "08f3856d-0b18-48ce-8d4b-10c3630068d6"
 authors = ["BatyLeo and contributors"]
-version = "0.4.3"
+version = "0.4.4"
 
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
