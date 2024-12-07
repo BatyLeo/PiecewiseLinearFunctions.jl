@@ -297,15 +297,7 @@ function Base.max(f₁::PiecewiseLinearFunction{T}, f₂::PiecewiseLinearFunctio
     return -min(-f₁, -f₂)
 end
 
-"""
-$TYPEDSIGNATURES
-
-Compute the composition f ∘ g of two piecewise linear functions.
-By default, the function removes redundant breakpoints in the output as a post processing step.
-
-This method can also be called using Base.∘
-"""
-function compose(
+function old_compose(
     f::PiecewiseLinearFunction{T},
     g::PiecewiseLinearFunction{T};
     postprocess_breakpoints=true,
@@ -361,6 +353,84 @@ function compose(
     return fcircg
 end
 
+function extract_segments(f::PiecewiseLinearFunction)
+    n = length(f.y)
+
+    segments = map(1:(n - 1)) do i
+        x1, y1 = f.x[i], f.y[i]
+        x2, y2 = f.x[i + 1], f.y[i + 1]
+        a = (y2 - y1) / (x2 - x1)
+        b = y1 - a * x1
+        return min(y1, y2), max(y1, y2), a, b
+    end
+    push!(
+        segments,
+        (
+            min(f.y[end], f.right_slope * Inf),
+            max(f.y[end], f.right_slope * Inf),
+            f.right_slope,
+            f.y[end] - f.right_slope * f.x[end],
+        ),
+    )
+    pushfirst!(
+        segments,
+        (
+            min(f.y[1], f.left_slope * -Inf),
+            max(f.y[1], f.left_slope * -Inf),
+            f.left_slope,
+            f.y[1] - f.left_slope * f.x[1],
+        ),
+    )
+    return segments
+end
+
+"""
+$TYPEDSIGNATURES
+
+Compute the composition f ∘ g of two piecewise linear functions.
+By default, the function checks for and removes redundant breakpoints in the output as a post processing step.
+For faster computation, set `postprocess_breakpoints=false`.
+
+This method can also be called using Base.∘
+"""
+function compose(
+    f::PiecewiseLinearFunction, g::PiecewiseLinearFunction; postprocess_breakpoints=true
+)
+    # All breakpoinsts of g are breakpoints of f ∘ g
+    new_x = copy(g.x)
+    # For each breakpoint of f, check if they create new breakpoints in f ∘ g
+    g_segments = extract_segments(g)
+    for (y1, y2, a, b) in g_segments
+        for x in f.x
+            if x < y1 || x > y2
+                continue
+            end
+            if a != 0.0
+                xf = (x - b) / a
+                push!(new_x, xf)
+            end
+        end
+    end
+    unique!(new_x)  # remove duplicates
+    sort!(new_x)    # sort breakpoints
+    new_y = [f(g(x)) for x in new_x]
+
+    # Compute the slopes of the new function
+    new_right_slope = if g.right_slope >= 0
+        g.right_slope * f.right_slope
+    else # g.right_slope < 0
+        g.right_slope * f.left_slope
+    end
+    new_left_slope = if g.left_slope >= 0
+        g.left_slope * f.left_slope
+    else # g.left_slope < 0
+        g.left_slope * f.right_slope
+    end
+
+    fcircg = PiecewiseLinearFunction(new_x, new_y, new_left_slope, new_right_slope)
+    return postprocess_breakpoints ? remove_redundant_breakpoints(fcircg) : fcircg
+end
+
 function Base.:∘(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     return compose(f, g)
 end
@@ -384,7 +454,9 @@ $TYPEDSIGNATURES
 
 Compute the convex meet of two piecewise linear functions, i.e. the tightest convex lower bound.
 """
-function convex_meet(f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}) where {T}
+function old_convex_meet(
+    f::PiecewiseLinearFunction{T}, g::PiecewiseLinearFunction{T}
+) where {T}
     return convex_lower_bound(min(f, g))
 end
 
@@ -438,7 +510,7 @@ A faster version of `convex_meet` that only works on convex functions.
 !!! warning
     This function does not check if the input functions are convex.
 """
-function fast_convex_meet(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
+function convex_meet(f::PiecewiseLinearFunction, g::PiecewiseLinearFunction)
     x = vcat(f.x, g.x)
     y = vcat(f.y, g.y)
     perm = sortperm(x)
@@ -471,6 +543,6 @@ end
 
 export PiecewiseLinearFunction
 export compute_slopes, compose, remove_redundant_breakpoints
-export is_convex, convex_meet, fast_convex_meet, convex_lower_bound
+export is_convex, convex_meet, convex_lower_bound
 
 end
