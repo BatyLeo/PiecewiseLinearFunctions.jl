@@ -1,6 +1,7 @@
 module PiecewiseLinearFunctions
 
 using DocStringExtensions: TYPEDEF, TYPEDFIELDS, TYPEDSIGNATURES
+using RecipesBase: @recipe
 
 """
 $TYPEDEF
@@ -33,6 +34,14 @@ function (f::PiecewiseLinearFunction)(x)
     else
         return (f.y[i + 1] - f.y[i]) / (f.x[i + 1] - f.x[i]) * (x - f.x[i]) + f.y[i]
     end
+end
+
+@recipe function f(ff::PiecewiseLinearFunction)
+    return x -> ff(x)
+end
+
+@recipe function f(ff::PiecewiseLinearFunction, xs)
+    return x -> ff(x), xs
 end
 
 function Base.:(==)(

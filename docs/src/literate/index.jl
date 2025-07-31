@@ -42,6 +42,6 @@ g = PiecewiseLinearFunction([0.0, 0.5, 1.0], [0.5, 0.4, 0.5], -0.5, 2.0)
 is_convex(f), is_convex(g)
 #
 h = convex_meet(f, g)
-plot(f; label="f")
+plot(f, -2:0.1:2; label="f")
 plot!(g; label="g")
 plot!(h; label="convex_meet(f, g)")
